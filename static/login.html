@@ -1,0 +1,39 @@
+<!-- login.html -->
+
+<form id="loginForm" action="/login" method="post">
+  <label for="usuario">Username:</label><br>
+  <input type="text" id="usuario" name="usuario"><br>
+  <label for="contraseña">Password:</label><br>
+  <input type="password" id="contraseña" name="contraseña"><br><br>
+  <input type="submit" value="Login">
+</form>
+
+<script>
+  async function loginUser(event) {
+      event.preventDefault(); // Prevenir el envío del formulario por defecto
+      const formData = {
+          usuario: document.getElementById("usuario").value,
+          contraseña: document.getElementById("contraseña").value
+      };
+
+      const response = await fetch('/login', { 
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+          localStorage.setItem('token', data.access_token);
+          window.location.href = '/index'; // Redirige a la página de index
+      } else {
+          alert(data.detail); // Mostrar el mensaje de error recibido del servidor
+      }
+  }
+
+  document.getElementById("loginForm").addEventListener("submit", loginUser);
+</script>
+
+  
