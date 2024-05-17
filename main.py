@@ -9,8 +9,31 @@ from source import database
 from source.routes import AuthRoutes# Importar la función desde el módulo
 from typing import List
 from source.database import db_mysql
+from sqlalchemy.orm import Session
+from source.database import SessionLocal
+
 
 app = FastAPI()
+
+# Función para obtener la sesión de la base de datos
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Ruta para probar la autenticación
+@app.get("/test-auth")
+def test_auth(db: Session = Depends(get_db)):
+    username = "Liam"  # Nombre de usuario válido
+    password = "5678"  # Contraseña válida
+    try:
+        authenticated_user = authenticate_user(db, username, password)
+        return {"message": "Autenticación exitosa", "authenticated_user": authenticated_user}
+    except HTTPException as e:
+        return {"error": f"Error de autenticación: {e.detail}"}
+    
 
 # Ruta para obtener todos los usuarios de la base de datos
 @app.get("/usuarios",response_model=list[dict]) #Esta anotacion especifica que la ruta devuelve una lista de diccionarios como respuesta.
