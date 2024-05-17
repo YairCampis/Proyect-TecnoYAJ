@@ -5,6 +5,7 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session # Session es una sesión de bd que proporciona SQLAlchemy para realizar consultas.
 from source.models.models import usuarios # Importa los modelos
+from source.database import SessionLocal
 
 # Configuración de JWT
 SECRET_KEY = "supersecretkey"
@@ -30,13 +31,21 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+
 def authenticate_user(db: Session,usuario: str, contraseña: str):
+    print(f"Usuario recibido: {usuario}")  # Imprime el usuario recibido desde el formulario
+    print(f"Contraseña recibida: {contraseña}")  # Imprime la contraseña recibida desde el formulario
+
     # Verificar credenciales en la base de datos
     user = get_user(db, usuario) # Llamada a la función get_user con la sesión de la base de datos
+    print(f"Usuario de la base de datos: {user}")  # Imprime el usuario obtenido de la base de datos
+    
     if not user:
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
     if not verify_password(contraseña, user.contraseña): # Verificación de usuario y contraseña
-        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+         print("Contraseña incorrecta")
+         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+    print("Autenticación exitosa")  # Imprime si la autenticación fue exitosa
     return user
 
 def get_user(db: Session, usuario: str):
