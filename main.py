@@ -1,19 +1,31 @@
 
-from fastapi import FastAPI,Depends,HTTPException, Request
-from source.services.schemas import usuarios, pedidos, detalle_pedidos, productos, pagos, facturacion
-from source.services.crud import crear_usuario,obtener_usuario_por_id,actualizar_usuario,eliminar_usuario, crear_pedido, crear_detalle_pedido, crear_producto, crear_pago, crear_factura 
+from fastapi import FastAPI,Depends,HTTPException
+from source.services.schemas import usuarios
+from source.services.crud import crear_usuario 
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from source.services.auth import authenticate_user, create_access_token,ACCESS_TOKEN_EXPIRE_MINUTES,ALGORITHM, get_user
-from source import database
+from source.services.auth import authenticate_user, create_access_token,ACCESS_TOKEN_EXPIRE_MINUTES,ALGORITHM
 from source.routes import AuthRoutes# Importar la función desde el módulo
+#from source import database
+
 from typing import List
 from source.database import db_mysql
+from source.database.db_mysql import get_db
 from sqlalchemy.orm import Session
 from source.database import SessionLocal
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
+
+# Configuración de CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Cambia esto para restringir los orígenes permitidos
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Función para obtener la sesión de la base de datos
 def get_db():
@@ -28,7 +40,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Ruta para manejar las solicitudes de autenticación
 @app.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.usuario, form_data.contraseña)
+    user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=401,
@@ -64,41 +76,3 @@ async def listar_usuarios():
 async def get_user():
     detalles_user = get_user()  # Obtiene los detalles de 1 empleado de la base de datos
     return detalles_user
-
-
-
-
-
-
-
-# Lógica de autenticación
-
-#@app.post("/login")
-#async def login(request: Request):
- #   form_data = await request.form()
-  #  usuario = form_data.get("usuario")
-   # contraseña = form_data.get("contraseña")
-
- #   user = authenticate_user(usuario, contraseña)
-  #  if not user:
-   #     raise HTTPException(status_code=401, detail="Incorrect username or password")
-    #access_token_expires = timedelta(minutes=30)
-    #access_token = create_access_token(
-     #   data={"sub": user.username}, expires_delta=access_token_expires)
-    #return {"access_token": access_token, "token_type": "bearer"}
-
-#Rutas
-
-
-#@app.post("/productos/", response_model=productos)
-#async def crear_producto(prod:productos):
- #   return crear_producto(prod)
-
-#@app.post("/pedidos/", response_model=pedidos)
-#async def crear_pedido(ped:pedidos):
- #   return crear_pedido(ped)
-
-#@app.post("/pagos/", response_model=pagos)
-#async def crear_pago_api(pag:pagos):
- #   return crear_pago(pag)
-

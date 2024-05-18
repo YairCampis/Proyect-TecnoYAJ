@@ -73,12 +73,12 @@
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
     
-            const usuario = document.getElementById('inputUsuario').value;
-            const contraseña = document.getElementById('inputContraseña').value;
+            const username = document.getElementById('inputUsername').value;
+            const password = document.getElementById('inputPassword').value;
     
             axios.post('/token', {
-                usuario: usuario,
-                contraseña: contraseña
+                username: username,
+                password: password
             })
             .then(function (response) {
                 //Manejar la respuesta del servidor

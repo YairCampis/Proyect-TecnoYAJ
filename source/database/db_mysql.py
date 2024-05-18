@@ -3,9 +3,11 @@ import mysql.connector
 from fastapi import FastAPI, Depends, HTTPException
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from source.services.auth import SECRET_KEY, authenticate_user, create_access_token,ACCESS_TOKEN_EXPIRE_MINUTES,ALGORITHM
+from source.database import SessionLocal
+from source.services.auth import SECRET_KEY, authenticate_user, create_access_token,ALGORITHM
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-import pymysql
+#import pymysql
+#from main import app
 
 #Conexion a la base de datos MySQL
 def connect_to_db():
@@ -83,3 +85,10 @@ def create_access_token(data: dict, expires_delta: timedelta):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+# Función para obtener la sesión de la base de datos
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

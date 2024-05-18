@@ -1,4 +1,9 @@
+from pydantic import BaseModel
 from source.database import db_mysql
+from source.models import models
+from sqlalchemy.orm import Session
+
+
 
 # Funciones CRUD para la tabla de usuarios
 def crear_usuario(usuario):
@@ -7,6 +12,10 @@ def crear_usuario(usuario):
     cursor.execute(query, (usuario.usuario, usuario.cc, usuario.email, usuario.contraseña, usuario.telefono, usuario.Rol))
     db_mysql.commit()
     return usuario
+
+
+def get_user(db: Session, usuario: str):
+    return db.query(BaseModel).filter(BaseModel.usuario == usuario).first()
 
 def obtener_usuario_por_id(user_id):
     cursor = db_mysql.cursor(dictionary=True)
