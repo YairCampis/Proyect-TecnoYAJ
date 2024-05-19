@@ -1,5 +1,6 @@
 
 from fastapi import FastAPI,Depends,HTTPException,status
+import uvicorn
 from source import models
 from source.services.schemas import usuarios
 from source.services.crud import crear_usuario 
@@ -20,7 +21,7 @@ app = FastAPI()
 # Configuración de CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Cambia esto para restringir los orígenes permitidos
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,6 +34,13 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@app.get("/")
+def index():
+    return {
+        "message": "Hola a todos, Bienvenidos!"
+    }
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -100,3 +108,8 @@ async def get_user(username: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     # Si el usuario existe, devolverlo
     return user
+
+if __name__ == "__main__":
+    uvicorn.run("main:app",
+                host="localhost",
+                reload=True)
