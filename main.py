@@ -1,13 +1,12 @@
 
-from fastapi import FastAPI,Depends,HTTPException
+from fastapi import FastAPI,Depends,HTTPException,status
+from source import models
 from source.services.schemas import usuarios
 from source.services.crud import crear_usuario 
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from source.services.auth import authenticate_user, create_access_token,ACCESS_TOKEN_EXPIRE_MINUTES,ALGORITHM
 from source.routes import AuthRoutes# Importar la función desde el módulo
-#from source import database
-
 from typing import List
 from source.database import db_mysql
 from source.database.db_mysql import get_db
@@ -48,6 +47,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
     access_token = create_access_token(
         data={"sub": user["usuario"]}, expires_delta=access_token_expires
     )
@@ -58,6 +58,21 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @app.get("/test")
 async def test_protected_route(token: str = Depends(oauth2_scheme)):
     return {"message": "Hello, you have a valid token!"}
+
+@app.post("/login")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+  user = await authenticate_user(form_data.username, form_data.password)
+  if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+  access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+  access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+  )
+  return {"access_token": access_token, "token_type": "bearer"}   
 
 
 @app.post("/usuarios/", response_model=usuarios)
@@ -71,8 +86,17 @@ async def listar_usuarios():
     all_users = db_mysql.get_all_users()  
     return all_users
 
-# Ruta para obtener los detalles de 1 usuario de la base de datos
-@app.get("/detalle_user")
-async def get_user():
-    detalles_user = get_user()  # Obtiene los detalles de 1 empleado de la base de datos
-    return detalles_user
+# Endpoint para obtener un usuario por su nombre de usuario
+@app.get("/users/")
+async def get_user(username: str, db: Session = Depends(get_db)):
+    # Realiza la consulta SQL para obtener el usuario por su nombre de usuario
+    query = "SELECT * FROM usuario WHERE usuario = %s"
+    result = db.execute(query, (username,))
+    user = result.fetchone()
+
+    # Verificar si el usuario existe
+    if user is None:
+        # Si el usuario no existe, levanta una excepción HTTP 404 (Not Found)
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    # Si el usuario existe, devolverlo
+    return user

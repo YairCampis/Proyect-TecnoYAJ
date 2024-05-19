@@ -39,7 +39,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-# Función para obtener todos los usuarios desde la base de datos
+# Función para obtener todos los usuarios desde la base de datos - PROBADA OK
 def get_all_users():
     connection = connect_to_db()
     try:

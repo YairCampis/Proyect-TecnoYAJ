@@ -20,7 +20,7 @@
                                 <div class="card shadow-lg border-0 rounded-lg mt-5">
                                     <div class="card-header"><h3 class="text-center font-weight-light my-4">Iniciar sesión</h3></div>
                                     <div class="card-body">
-                                        <form id="loginForm">
+                                        <form id="loginForm" method="POST">
                                             <div class="form-floating mb-3">
                                                 <input class="form-control" id="inputUsuario" type="text" placeholder="Nombre de usuario" name="usuario" />
                                                 <label for="inputUsuario">Usuario</label>
@@ -70,31 +70,35 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
  
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
+
+        //const loginForm = document.getElementById('loginForm');
+    
+            loginForm.addEventListener('submit', function (event) {
             event.preventDefault();
-    
-            const username = document.getElementById('inputUsername').value;
-            const password = document.getElementById('inputPassword').value;
-    
-            axios.post('/token', {
-                username: username,
-                password: password
-            })
+
+            const inputUsuario = document.getElementById('inputUsuario').value;
+            const inputContraseña = document.getElementById('inputContraseña').value;
+               
+             const datalogin = {
+                Text: inputUsuario,
+                password: inputContraseña
+                                }
+
+            axios.post('/login', datalogin)
             .then(function (response) {
-                //Manejar la respuesta del servidor
-                const token = response.data.token;
-                // Almacenar el token JWT en el almacenamiento local (localStorage)
-                localStorage.setItem('token', token);
-                // Redireccionar a la página de inicio o realizar cualquier otra acción necesaria
-                window.location.href = '/index.html';
-            })
-            .catch(function (error) {
-                // Manejar errores de autenticación
-                console.error('Error de autenticación:', error);
-                // Mostrar un mensaje de error al usuario
-                alert('Error de autenticación. Verifique su usuario y contraseña.');
-            });
-        });
+                if (response.data.code == 'Error') {
+                        alert('Credenciales incorrectas')
+                }else {
+                        localStorage.setItem('token', response.data.result.access_token);
+                        window.location.href = 'index.html';
+                    }
+                }).catch(function (error) {
+                    console.log('Error al intentar entrar al sistema ', error)
+                    // Mostrar un mensaje de error al usuario
+                    alert('Error de autenticación. Verifique su usuario y contraseña.');
+
+                });
+        })
     </script>
     
     </body>

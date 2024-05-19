@@ -75,8 +75,8 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(contraseña):
     return pwd_context.hash(contraseña)
 
-
-def authenticate_user(db: Session,usuario: str, contraseña: str):
+#Funcion de autenticacion de usuario
+async def authenticate_user(db: Session,usuario: str, contraseña: str):
     print(f"Usuario recibido: {usuario}")  # Imprime el usuario recibido desde el formulario
     print(f"Contraseña recibida: {contraseña}")  # Imprime la contraseña recibida desde el formulario
 
